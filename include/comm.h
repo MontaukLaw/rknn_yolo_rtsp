@@ -39,7 +39,7 @@ extern "C" {
 #define OBJ_NAME_MAX_SIZE 16
 #define FPS 10
 
-  struct Session {
+struct Session {
     char path[64];
     CODEC_TYPE_E video_type;
     RK_U32 u32Width;
@@ -51,27 +51,27 @@ extern "C" {
     MPP_CHN_S stViChn;
     MPP_CHN_S stVenChn;
     MPP_CHN_S stRgaChn;
-  };
+};
 
-  // rknn list to draw boxs asynchronously
+// rknn list to draw boxs asynchronously
 
-  struct demo_cfg {
+struct demo_cfg {
     int session_count;
     struct Session session_cfg[MAX_SESSION_NUM];
-  };
+};
 
-  void common_vi_setup(struct Session* session, VI_CHN_WORK_MODE mode, RK_S32 vi_pipe);
+void common_vi_setup(struct Session *session, VI_CHN_WORK_MODE mode, RK_S32 vi_pipe);
 
-  void common_venc_setup(struct Session* session, bool ifSubStream);
-  // void common_venc_setup(struct Session* session);
+void common_venc_setup(struct Session *session, bool ifSubStream);
+// void common_venc_setup(struct Session* session);
 
-  unsigned char* load_model(const char* filename, int* model_size);
+unsigned char *load_model(const char *filename, int *model_size);
 
-  void trans_data_for_yolo_input(unsigned char* rga_buffer_model_input, struct demo_cfg cfg, MEDIA_BUFFER buffer);
+void trans_data_for_yolo_input(unsigned char *rga_buffer_model_input, struct demo_cfg cfg, MEDIA_BUFFER buffer);
 
-  long get_current_time_ms(void);
+long get_current_time_ms(void);
 
-  int bind_rga_for_vi(struct Session session);
+int bind_rga_for_vi(struct Session session);
 #ifdef __cplusplus
 }
 #endif

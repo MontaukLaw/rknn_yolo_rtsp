@@ -153,7 +153,6 @@ unsigned char* load_model(const char* filename, int* model_size)
     return data;
 }
 
-
 static int get_input_attr(void) {
     printf("input tensors:\n");
     memset(input_attrs, 0, sizeof(input_attrs));
@@ -189,7 +188,7 @@ static int get_output_attr(void) {
 
 }
 
-int init_model(const char* modelPath) {
+int init_model_by_model_path(const char* modelPath) {
     unsigned char* model;
     int ret = 0;
     printf("Loading model ...\n");
@@ -265,6 +264,7 @@ int init_model(const char* modelPath) {
 
 double get_us_ts(struct timeval t) { return (t.tv_sec * 1000000 + t.tv_usec); }
 
+#if 0
 int detect_by_buf(void* data, detect_result_group_t* detect_result_group) {
     int ret = 0;
     struct timeval start_time, stop_time;
@@ -308,5 +308,7 @@ int detect_by_buf(void* data, detect_result_group_t* detect_result_group) {
 
     return 0;
 }
+#endif
+
 
 

@@ -1,7 +1,7 @@
 #include "comm.h"
 #include "postprocess.h"
-#include "rknn_funcs.h"
 #include "include/rtsp_comm.h"
+#include "rknn_model.h"
 
 #define RTSP_INPUT_VI_WIDTH 1920
 #define RTSP_INPUT_VI_HEIGHT 1080
@@ -246,7 +246,7 @@ static void draw_box(MEDIA_BUFFER *buffer) {
         // printf("time interval is %ld\n", getCurrentTimeMsec() - time_before);
 
         // iterate the detected object
-        for (int j = 0; j < detect_result_group.count; j++) {
+        for (int j = 0; j < detect_result_group.detect_count; j++) {
             int x = detect_result_group.results[j].box.left + X_START;
             int y = detect_result_group.results[j].box.top + Y_START;
             int w = (detect_result_group.results[j].box.right -
@@ -309,7 +309,7 @@ static void *observer_thread(void *args) {
             rknn_list_pop(rknn_list_, &time_before, &detect_result_group);
             // printf("result count:%d \n", detect_result_group.count);
 
-            for (int j = 0; j < detect_result_group.count; j++) {
+            for (int j = 0; j < detect_result_group.detect_count; j++) {
                 int x = detect_result_group.results[j].box.left + X_START;
                 int y = detect_result_group.results[j].box.top + Y_START;
                 int w = (detect_result_group.results[j].box.right -
@@ -328,7 +328,7 @@ static void *observer_thread(void *args) {
                 boxInfoListNumber++;
             }
 
-            boxDisplayCounterDown = 3;
+            boxDisplayCounterDown = 1;
         }
 
         // hold box for 3 frames
@@ -548,10 +548,11 @@ static void *rknn_yolo_thread(void *args) {
             write_rgb_file(pRknnInputData);
 
             // Post Process
-            detect_by_buf(pRknnInputData, &detect_result_group);
+            // detect_by_buf(pRknnInputData, &detect_result_group);
+            int pResult = predict(pRknnInputData, &detect_result_group);
 
             // put detect result to list
-            if (detect_result_group.count > 0) {
+            if (detect_result_group.detect_count > 0) {
                 rknn_list_push(rknn_list_, get_current_time_ms(), detect_result_group);
                 int size = rknn_list_size(rknn_list_);
                 if (size >= MAX_RKNN_LIST_NUM) {
@@ -564,7 +565,6 @@ static void *rknn_yolo_thread(void *args) {
         RK_MPI_MB_ReleaseBuffer(buffer);
         free(pRknnInputData);
 
-        ifDetecting = RK_FALSE;
     }
 
     return NULL;
@@ -804,14 +804,15 @@ int main(int argc, char **argv) {
     signal(SIGINT, sig_proc);
 
     int ret = 0;
-    if (argc < 3) {
+    if (argc < 2) {
         printf("please input model name and rtsp config file\n");
         return -1;
     }
 
-    yoloModelFilePath = argv[1];
+    // yoloModelFilePath = argv[1];
+    init_model(argc, argv);
 
-    ret = init_model(yoloModelFilePath);
+    // ret = init_model(yoloModelFilePath);
 
     if (ret < 0) {
         printf("init model failed\n");

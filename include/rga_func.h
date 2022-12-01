@@ -2,7 +2,8 @@
 #define __RGA_FUNC_H__
 
 #include <dlfcn.h> 
-#include "RgaApi.h"
+#include "../include/3rdparty/rga/include/RgaApi.h"
+
 //#include <vector>
 
 #ifdef __cplusplus

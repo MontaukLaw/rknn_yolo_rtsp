@@ -32,6 +32,11 @@ extern "C" {
 #define DRAW_RESULT_BOX_CHN_INDEX 0
 #define RK_NN_RGA_CHN_INDEX 1
 
+#define OBJ_NAME_MAX_SIZE 16
+#define OBJ_NUMB_MAX_SIZE 64
+#define OBJ_CLASS_NUM     80
+#define PROP_BOX_SIZE     (5+OBJ_CLASS_NUM)
+
 #define MAX_RKNN_LIST_NUM 10
 #define UPALIGNTO(value, align) ((value + align - 1) & (~(align - 1)))
 #define UPALIGNTO16(value) UPALIGNTO(value, 16)
@@ -52,6 +57,25 @@ struct Session {
     MPP_CHN_S stVenChn;
     MPP_CHN_S stRgaChn;
 };
+typedef struct _BOX_RECT {
+    int left;
+    int right;
+    int top;
+    int bottom;
+} BOX_RECT;
+
+typedef struct __detect_result_t {
+    char name[OBJ_NAME_MAX_SIZE];
+    int class_index;
+    BOX_RECT box;
+    float prop;
+} detect_result_t;
+
+typedef struct _detect_result_group_t {
+    int id;
+    int detect_count;
+    detect_result_t results[OBJ_NUMB_MAX_SIZE];
+} detect_result_group_t;
 
 // rknn list to draw boxs asynchronously
 

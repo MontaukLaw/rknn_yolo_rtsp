@@ -9,10 +9,9 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-
 #include <linux/input.h>
-#include "libdrm/drm_fourcc.h"
-#include "xf86drm.h"
+#include "../lib/common/drm/include/libdrm/drm_fourcc.h"
+#include "../lib/common/drm/include/xf86drm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,20 +23,6 @@ typedef struct _drm_context{
     void *drm_handle;
     FUNC_DRM_IOCTL io_func;
 } drm_context;
-
-/* memory type definitions. */
-enum drm_rockchip_gem_mem_type
-{
-    /* Physically Continuous memory and used as default. */
-    ROCKCHIP_BO_CONTIG = 1 << 0,
-    /* cachable mapping. */
-    ROCKCHIP_BO_CACHABLE = 1 << 1,
-    /* write-combine mapping. */
-    ROCKCHIP_BO_WC = 1 << 2,
-    ROCKCHIP_BO_SECURE = 1 << 3,
-    ROCKCHIP_BO_MASK = ROCKCHIP_BO_CONTIG | ROCKCHIP_BO_CACHABLE |
-                       ROCKCHIP_BO_WC | ROCKCHIP_BO_SECURE
-};
 
 int drm_init(drm_context *drm_ctx);
 

@@ -29,5 +29,4 @@ int init_model(const char* modelPath);
 
 void rknn_list_pop(rknn_list* s, long* timeval, detect_result_group_t* detect_result_group);
 
-
 #endif

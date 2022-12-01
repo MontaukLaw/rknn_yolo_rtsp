@@ -5,7 +5,6 @@ int bind_rga_for_vi(struct Session session) {
     MPP_CHN_S stViChn;
     MPP_CHN_S stRgaChn;
     MPP_CHN_S stVencChn;
-
     RGA_ATTR_S stRgaAttr;
     int ret = 0;
 
@@ -18,7 +17,7 @@ int bind_rga_for_vi(struct Session session) {
 
     stRgaAttr.bEnBufPool = RK_TRUE;
     stRgaAttr.u16BufPoolCnt = 4;
-    stRgaAttr.u16Rotaion = 180;
+    stRgaAttr.u16Rotaion = 0;
 
     stRgaAttr.stImgIn.u32X = (session.u32Width - MODEL_INPUT_SIZE) / 2;
     stRgaAttr.stImgIn.u32Y = (session.u32Height - MODEL_INPUT_SIZE) / 2;
@@ -97,7 +96,6 @@ void common_venc_setup(struct Session *session, bool ifSubStream) {
     memset(&venc_chn_attr, 0, sizeof(venc_chn_attr));
 
     venc_chn_attr.stVencAttr.enType = session->video_type;
-
     venc_chn_attr.stVencAttr.imageType = session->enImageType;
 
     printf("venc session->u32Width: %d\n", session->u32Width);
@@ -109,7 +107,7 @@ void common_venc_setup(struct Session *session, bool ifSubStream) {
         venc_chn_attr.stVencAttr.u32PicHeight = session->u32Height; // MODEL_INPUT_SIZE;
         venc_chn_attr.stVencAttr.u32VirWidth = session->u32Width; // MODEL_INPUT_SIZE;
         venc_chn_attr.stVencAttr.u32VirHeight = session->u32Height;
-        venc_chn_attr.stVencAttr.enRotation = VENC_ROTATION_180;
+        venc_chn_attr.stVencAttr.enRotation = VENC_ROTATION_0;
     } else {
         venc_chn_attr.stVencAttr.u32PicWidth = MODEL_INPUT_SIZE; //session->u32Width; //MODEL_INPUT_SIZE;
         venc_chn_attr.stVencAttr.u32PicHeight = MODEL_INPUT_SIZE; //session->u32Height; //MODEL_INPUT_SIZE;

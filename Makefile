@@ -8,21 +8,23 @@ G++ := $(SDK_ROOT)/prebuilts/gcc/linux-x86/arm/gcc-arm-8.3-2019.03-x86_64-arm-li
 
 SYSROOT = $(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/host/arm-buildroot-linux-gnueabihf/sysroot
 
-CFLAGS := -I../../include/rkmedia \
-		-I$(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/build/rknpu-1.5.0/rknn/rknn_api/librknn_api/include/ \
+CFLAGS := -I$(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/build/rknpu-1.5.0/rknn/rknn_api/librknn_api/include/ \
 		-I$(SDK_ROOT)/external/camera_engine_rkaiq/include/common \
 		-I$(SDK_ROOT)/external/camera_engine_rkaiq/include/xcore \
 		-I$(SDK_ROOT)/external/camera_engine_rkaiq/include/uAPI \
 		-I$(SDK_ROOT)/external/camera_engine_rkaiq/include/algos \
 		-I$(SDK_ROOT)/external/camera_engine_rkaiq/include/iq_parser \
+		-I$(SYSROOT)/usr/include/rknn/ \
 		-I./include \
-		-I/usr/include/ \
-		-I/usr/arm-linux-gnueabihf/include/ \
-		-I$(SYSROOT)/usr/include/rknn/
+   		-I$(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/build/rknpu-1.5.0/rknn/rknn_api/librknn_api/include/ \
+   		-I/usr/include/ \
+  		-I/usr/arm-linux-gnueabihf/include/ \
+   		-I$(SYSROOT)/usr/include/rknn/
 
 LIB_FILES := -L$(SYSROOT)/usr/lib \
-			 -L$(SDK_ROOT)/external/rkmedia/examples/librtsp/\
-			 -L$(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/build/rockx/sdk/rockx-rk1806-Linux/lib/
+			 -L$(SDK_ROOT)/external/rkmedia/examples/librtsp/ \
+			 -L$(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/build/rockx/sdk/rockx-rk1806-Linux/lib/ \
+			 -L./lib
 
 LD_FLAGS := -lpthread -leasymedia -ldrm -lrockchip_mpp \
 			-lasound -lv4l2 -lv4lconvert -lrga \
@@ -31,7 +33,7 @@ LD_FLAGS := -lpthread -leasymedia -ldrm -lrockchip_mpp \
 
 CFLAGS += -DRKAIQ
 
-SAMPLE_COMMON := ../common/sample_common_isp.c
+SAMPLE_COMMON := sample_common_isp.c
 
 all:
 	$(G++) main.cc comm.cc rknn_funcs.cpp postprocess.cc $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/rknn_yolo_rtsp --sysroot=$(SYSROOT)
@@ -44,3 +46,5 @@ all:
 	# $(GCC) helloworld.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/helloworld --sysroot=$(SYSROOT)
 	$(hide)$(ECHO) "Build Done ..."
 
+clean:
+	rm ./build/*

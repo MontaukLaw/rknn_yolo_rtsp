@@ -1,7 +1,7 @@
 #ifndef __COMM_H__
 #define __COMM_H__
 
-#include "CImg.h"
+#include "3rdparty/CImg/CImg.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,23 +21,23 @@ extern "C" {
 #include <rga/im2d.h>
 #include <rga/rga.h>
 
-#include "../../librtsp/rtsp_demo.h"
 #include "rkmedia_api.h"
 #include "rkmedia_venc.h"
 #include "rknn_api.h"
-
-#include "../../common/sample_common.h"
+#include "rtsp_demo.h"
 
 #define MODEL_INPUT_SIZE 640
 #define MAX_SESSION_NUM 2
+
 #define DRAW_RESULT_BOX_CHN_INDEX 0
 #define RK_NN_RGA_CHN_INDEX 1
+
 #define MAX_RKNN_LIST_NUM 10
 #define UPALIGNTO(value, align) ((value + align - 1) & (~(align - 1)))
 #define UPALIGNTO16(value) UPALIGNTO(value, 16)
 #define YOLO_INPUT_SIZE (MODEL_INPUT_SIZE * MODEL_INPUT_SIZE * 3)
 #define OBJ_NAME_MAX_SIZE 16
-#define FPS 10
+#define FPS 30
 
 struct Session {
     char path[64];

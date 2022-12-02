@@ -1,10 +1,16 @@
-20221201  16:12
+20221202 13:15
+
+tested rk official model into model folder
+yolov5s_relu_tk1_RV1109_1126_u8_precompile.rknn
+tested on board, average detect time about 100ms
+
+20221201 16:12
 
 can use swab model to make a real quick predect now.
 add swab model in model folder
 now we can move on to other camera
 
-20221201  13:00
+20221201 13:00
 
 can see rknn box in rtsp
 prepare to use new model to detect, as old model seems too slow

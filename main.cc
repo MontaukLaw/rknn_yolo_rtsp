@@ -510,7 +510,6 @@ static void write_rgb_file(void *data) {
     fclose(save_file);
 }
 
-
 // this thread is for rknn
 static void *rknn_yolo_thread(void *args) {
 
@@ -798,8 +797,12 @@ int main(int argc, char **argv) {
     RK_U32 u32Width = 1920;
     RK_U32 u32Height = 1080;
 
-    RK_U32 u32VC1Width = 1280;
-    RK_U32 u32VC1Height = 720;
+    // GC2053 can only use 1920*1080
+    RK_U32 u32VC1Width = 1920;
+    RK_U32 u32VC1Height = 1080;
+
+    // RK_U32 u32VC1Width = 1280;
+    // RK_U32 u32VC1Height = 720;
 
     signal(SIGINT, sig_proc);
 

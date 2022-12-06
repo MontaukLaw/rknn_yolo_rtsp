@@ -816,8 +816,6 @@ int main(int argc, char **argv) {
     // imx415 可以使用 1280*720
     RK_U32 u32VC1Width = 1280;
     RK_U32 u32VC1Height = 720;
-    // RK_U32 u32VC1Width = 1280;
-    // RK_U32 u32VC1Height = 720;
 
     signal(SIGINT, sig_proc);
 

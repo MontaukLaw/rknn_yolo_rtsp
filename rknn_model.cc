@@ -128,22 +128,19 @@ int query_model_info(MODEL_INFO *m, rknn_context ctx) {
         m->height = m->in_attr[0].dims[2];
         m->channel = m->in_attr[0].dims[0];
     }
-    printf("model input height=%d, width=%d, channel=%d\n", m->height, m->width,
-           m->channel);
+    printf("model input height=%d, width=%d, channel=%d\n", m->height, m->width, m->channel);
 
     return 0;
 }
 
-
 double __get_us(struct timeval t) { return (t.tv_sec * 1000000 + t.tv_usec); }
 
+// 模型初始化
 int init_model(int argc, char **argv) {
-    if (argc != 2) {
-        printf("Usage: %s <rknn model path> \n", argv[0]);
-        return -1;
-    }
+
     int ret = 0;
     m_info.m_path = (char *) argv[1];
+    // 初始化模型参数
     printf("model file is : %s \n", m_info.m_path);
     m_info.m_type = YOLOV5;
     m_info.color_expect = RK_FORMAT_RGB_888;
@@ -153,25 +150,27 @@ int init_model(int argc, char **argv) {
     m_info.in_source = VIDEO_STREAM;
 
     /* Create the neural network */
+    // 根据模型文件创建模型
     printf("Loading model...\n");
     int model_data_size = 0;
     unsigned char *model_data = load_model(m_info.m_path, &model_data_size);
-
     printf("model_data_size = %d \n", model_data_size);
 
+    // rknn初始化
     ret = rknn_init(&m_ctx, model_data, model_data_size, 0);
     if (ret < 0) {
         printf("rknn_init error ret=%d\n", ret);
         return -1;
     }
 
+    // 使用rknn的api查询模型信息
     printf("query info\n");
     ret = query_model_info(&m_info, m_ctx);
     if (ret < 0) {
         return -1;
     }
 
-    /* Init input tensor */
+    /* 初始化输入tensor */
     memset(inputs, 0, sizeof(inputs));
     inputs[0].index = 0;
     inputs[0].type = RKNN_TENSOR_UINT8; /* SAME AS INPUT IMAGE */
@@ -180,9 +179,10 @@ int init_model(int argc, char **argv) {
     inputs[0].fmt = RKNN_TENSOR_NHWC; // RKNN_TENSOR_NCHW; // RKNN_TENSOR_NHWC; /* SAME AS INPUT IMAGE */
     inputs[0].pass_through = 0;
 
-    /* Init output tensor */
+    /* 初始化输出的tensor */
     memset(outputs, 0, sizeof(outputs));
 
+    // 不使用float， 因为模型是用u8量化过
     for (int i = 0; i < m_info.out_nodes; i++) {
         outputs[i].want_float = 0;
     }
@@ -190,6 +190,12 @@ int init_model(int argc, char **argv) {
     return 0;
 }
 
+/**
+ * 对数据进行推理
+ * @param bufData 输入数据，RGB格式
+ * @param detect_result_group  输出结果
+ * @return
+ */
 int predict(void *bufData, detect_result_group_t *detect_result_group) {
 
     printf("start detect \n");
@@ -197,29 +203,18 @@ int predict(void *bufData, detect_result_group_t *detect_result_group) {
     struct timeval start_time, stop_time;
     int ret;
 
-//    // for test
-//    FILE *fp = NULL;
-//    fp = fopen("rga_33.rgb", "rb");
-//
-//    if (fp == NULL) {
-//        printf("shit happened\n");
-//    }
-
-    //    unsigned char *rgb640ImgBuf = load_data(fp, 0, MODEL_INPUT_SIZE * MODEL_INPUT_SIZE * 3);
-    //    unsigned char *inputBuf = (unsigned char *) malloc(MODEL_INPUT_SIZE * MODEL_INPUT_SIZE * 3);
-    //    memcpy(inputBuf, rgb640ImgBuf, MODEL_INPUT_SIZE * MODEL_INPUT_SIZE * 3);
+    // 把数据放入输入tensor
     inputs[0].buf = bufData;
-    // inputs[0].buf = inputBuf;
 
+    // 统计时间， 方便后面计时
     gettimeofday(&start_time, NULL);
 
-    // inputs[0].buf = rgb640ImgBuf;
+    // 使用rknn的api进行推理
     rknn_inputs_set(m_ctx, 1, inputs);
     ret = rknn_run(m_ctx, NULL);
     ret = rknn_outputs_get(m_ctx, 3, outputs, NULL);
 
-    /* Post process */
-    // detect_result_group_t detect_result_group;
+    /* 后处理 */
     post_process_640_v5(outputs, &m_info, detect_result_group);
 
     gettimeofday(&stop_time, NULL);

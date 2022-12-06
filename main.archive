@@ -777,7 +777,6 @@ int create_rga_chn(RK_S32 rgaChn, RK_U32 u32WidthIn, RK_U32 u32HeightIn, RK_U32 
     return 0;
 }
 
-// 将vi绑定到vga
 int bind_vi_rga(RK_S32 cameraId, RK_U32 viChnId, RK_U32 rgaChnId) {
 
     RK_S32 ret = 0;
@@ -801,21 +800,14 @@ int bind_vi_rga(RK_S32 cameraId, RK_U32 viChnId, RK_U32 rgaChnId) {
 
 }
 
-// rtsp pipe: scale0 -> vi chn 0 -> RK_MPI_SYS_GetMediaBuffer(RK_ID_VI）from vi chn0 -> 获取rknn的推测结果队列 -> 画框子 -> RK_MPI_SYS_SendMediaBuffer(RK_ID_VENC) to venc chn 0
-// venc 的回调 -> rtsp
-// rknn pipe: scale1 -> vi chn 1 1920x1080 -> rga chn 1 640x640 -> RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA）转成RGB，推理之后，放入队列
 int main(int argc, char **argv) {
 
     RK_U32 u32Width = 1920;
     RK_U32 u32Height = 1080;
 
-    // GC2053 只能用 1920*1080
-    // RK_U32 u32VC1Width = 1920;
-    // RK_U32 u32VC1Height = 1080;
-
-    // imx415 可以使用 1280*720
-    RK_U32 u32VC1Width = 1280;
-    RK_U32 u32VC1Height = 720;
+    // GC2053 can only use 1920*1080
+    RK_U32 u32VC1Width = 1920;
+    RK_U32 u32VC1Height = 1080;
 
     // RK_U32 u32VC1Width = 1280;
     // RK_U32 u32VC1Height = 720;
@@ -829,8 +821,10 @@ int main(int argc, char **argv) {
     }
 
     // yoloModelFilePath = argv[1];
-    // 初始化模型
-    ret = init_model(argc, argv);
+    init_model(argc, argv);
+
+    // ret = init_model(yoloModelFilePath);
+
     if (ret < 0) {
         printf("init model failed\n");
         return -1;
@@ -839,16 +833,13 @@ int main(int argc, char **argv) {
     printf("xml dirpath: %s\n\n", pIqfilesPath);
     printf("#bMultictx: %d\n\n", bMultictx);
 
-    // 初始化isp
     init_isp();
 
-    // 初始化rtsp
     init_rtsp();
 
-    // 系统初始化
     RK_MPI_SYS_Init();
 
-    // 分别为rknn跟monitor创建vi通道，通道号分别为0跟1
+    // create vi for both channel
     ret = create_vi(u32Width, u32Height, "rkispp_scale0", DRAW_RESULT_BOX_CHN_INDEX);
     if (ret < 0) {
         printf("create_vi %d failed\n", DRAW_RESULT_BOX_CHN_INDEX);
@@ -861,7 +852,6 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    // 创建rga通道，通道号为1
     ret = create_rga_chn(RK_NN_RGA_CHN_INDEX, u32VC1Width,
                          u32VC1Height, MODEL_INPUT_SIZE, MODEL_INPUT_SIZE);
     if (ret < 0) {
@@ -869,17 +859,16 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    // 把rga chn1绑定到vi chn1
+    // bind vi chn 1 to rga chn 1 after binding, can get buffer from rga
     bind_vi_rga(s32CamId, RK_NN_RGA_CHN_INDEX, RK_NN_RGA_CHN_INDEX);
 
-    // 创建venc通道，通道号为0
+    // create venc channel for vi chn 0
     ret = create_venc_chn(30, u32Width, u32Height, DRAW_RESULT_BOX_CHN_INDEX);
     if (ret < 0) {
         printf("create_venc_chn %d\n", DRAW_RESULT_BOX_CHN_INDEX);
         return -1;
     }
 
-    // 注册venc的回调函数，即产生了编码好的数据，就会回调这个函数
     ret = reg_venc_cb();
     if (ret < 0) {
         printf("reg venc cb\n");
@@ -887,28 +876,106 @@ int main(int argc, char **argv) {
     }
 
     // bind_vi_venc();
-    // 打开vi通道０的输出，即开始从isp获取数据
+    // turn on the vi output
     ret = RK_MPI_VI_StartStream(s32CamId, DRAW_RESULT_BOX_CHN_INDEX);
     if (ret < 0) {
         printf("RK_MPI_VI_StartStream failed\n");
         return -1;
     }
 
-    //　创建rknn的队列，用于线程间保存rknn的推理结果
     create_rknn_list(&rknn_list_);
 
-    //　创建推理线程
     pthread_create(&rknn_yolo_thread_id, NULL, rknn_yolo_thread, NULL);
 
-    // 从vi中获取数据，然后那推理结果，画框子，然后送进编码器
+    // get the stream from vi and put in venc
     pthread_create(&observer_thread_id, NULL, observer_thread, NULL);
 
+    // main_vi_process();
     while (g_flag_run) {
         usleep(1000);
     }
 
-    // 清洁工作
+    // if goes here mean the program is going to exit
     destroy_all();
 
     return 0;
 }
+
+#if 0
+int main__(int argc, char **argv) {
+
+    signal(SIGINT, sig_proc);
+
+    int ret = 0;
+    if (argc < 3) {
+        printf("please input model name and rtsp config file\n");
+        return -1;
+    }
+
+    memset(&cfg, 0, sizeof(cfg));
+
+    load_cfg(argv[2]);
+
+    yoloModelFilePath = argv[1];
+
+    ret = init_model(yoloModelFilePath);
+
+    if (ret < 0) {
+        printf("init model failed\n");
+        return -1;
+    }
+
+    printf("xml dirpath: %s\n\n", pIqfilesPath);
+    printf("#bMultictx: %d\n\n", bMultictx);
+
+    init_isp();
+
+    // init rtsp
+    printf("init rtsp\n");
+
+    g_rtsplive = create_rtsp_demo(554);
+
+    // init mpi
+    printf("init mpi\n");
+    RK_MPI_SYS_Init();
+
+    // init 2 sessions
+    init_sessions();
+
+    // get rknn init
+    create_rknn_list(&rknn_list_);
+
+
+    MPP_CHN_S stEncChn;
+    stEncChn.enModId = RK_ID_VENC;
+    stEncChn.s32ChnId = DRAW_RESULT_BOX_CHN_INDEX;
+
+
+    // 注册数据输出回调。与RK_MPI_SYS_GetMediaBuffer相比，无需缓存buffer等待用户索取，因此更节省内存。
+    ret = RK_MPI_SYS_RegisterOutCb(&stEncChn, venc_packet_cb);
+    if (ret) {
+        printf("ERROR: register output callback for VENC[0] error! ret=%d\n", ret);
+        return 0;
+    }
+
+    // Get the sub-stream buffer for humanoid recognition
+    pthread_create(&rknn_yolo_thread_id, NULL, rknn_yolo_thread, NULL);
+
+    // The mainstream draws a box asynchronously based on the recognition result
+    pthread_create(&observer_thread_id, NULL, observer_thread, NULL);
+
+
+    // pthread_create(&get_rga_buffer_thread_id, NULL, get_rga_buffer_thread, NULL);
+
+    // main thread will loop here
+    // main_vi_process();
+    while (g_flag_run) {
+        usleep(1000);
+    }
+    // if goes here mean the program is going to exit
+    destroy_all();
+
+    return 0;
+
+}
+#endif

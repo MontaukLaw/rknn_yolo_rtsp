@@ -1,0 +1,279 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.2.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Sun Jul 30 16:05:52 2023
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# automatic
+?F = $(notdir $?)
+# environment
+PAPERSIZE = a4
+# default
+.SHELLFLAGS := -c
+# environment
+XDG_SESSION_CLASS = user
+# environment
+VSCODE_AGENT_FOLDER = /home/marc/.vscode-server
+# makefile (from 'Makefile', line 32)
+LD_FLAGS := -lpthread -leasymedia -ldrm -lrockchip_mpp -lasound -lv4l2 -lv4lconvert -lrga -lRKAP_ANR -lRKAP_Common -lRKAP_3A -lmd_share -lrkaiq -lod_share -lrtsp -lrknn_api
+# environment
+XDG_SESSION_TYPE = tty
+# makefile (from 'Makefile', line 7)
+G++ := /opt/atk-dlrv1126-toolchain/prebuilts/gcc/linux-x86/arm/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# automatic
+@F = $(notdir $@)
+# default
+MAKE_VERSION := 4.2.1
+# makefile
+CURDIR := /home/marc/my_project/rknn_yolo_rtsp
+# makefile
+SHELL = /bin/sh
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en","osLocale":"en","availableLanguages":{}}
+# environment
+_ = /usr/bin/make
+# makefile (from 'Makefile', line 37)
+CFLAGS := -I/opt/atk-dlrv1126-toolchain/buildroot/output/rockchip_rv1126_rv1109/build/rknpu-1.5.0/rknn/rknn_api/librknn_api/include/ -I/opt/atk-dlrv1126-toolchain/external/camera_engine_rkaiq/include/common -I/opt/atk-dlrv1126-toolchain/external/camera_engine_rkaiq/include/xcore -I/opt/atk-dlrv1126-toolchain/external/camera_engine_rkaiq/include/uAPI -I/opt/atk-dlrv1126-toolchain/external/camera_engine_rkaiq/include/algos -I/opt/atk-dlrv1126-toolchain/external/camera_engine_rkaiq/include/iq_parser -I/opt/atk-dlrv1126-toolchain/buildroot/output/rockchip_rv1126_rv1109/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/rknn/ -I./include -I/opt/atk-dlrv1126-toolchain/buildroot/output/rockchip_rv1126_rv1109/build/rknpu-1.5.0/rknn/rknn_api/librknn_api/include/ -I/opt/atk-dlrv1126-toolchain/buildroot/output/rockchip_rv1126_rv1109/host/arm-buildroot-linux-gnueabihf/sysroot/usr/include/rknn/ -I./libs/common -I./libs/librga/include -I./libs/common/drm/include/libdrm  -DRKAIQ
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST :=  Makefile
+# makefile (from 'Makefile', line 6)
+GCC := /opt/atk-dlrv1126-toolchain/prebuilts/gcc/linux-x86/arm/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+MAKELEVEL := 0
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# makefile (from 'Makefile', line 26)
+LIB_FILES := -L/opt/atk-dlrv1126-toolchain/prebuilts/gcc/linux-x86/arm/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/8.3.0/ -L/opt/atk-dlrv1126-toolchain/buildroot/output/rockchip_rv1126_rv1109/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib -L/opt/atk-dlrv1126-toolchain/external/rkmedia/examples/librtsp/ -L/opt/atk-dlrv1126-toolchain/buildroot/output/rockchip_rv1126_rv1109/build/rockx/sdk/rockx-rk1806-Linux/lib/ -L./lib
+# environment
+LC_NAME = en_HK.UTF-8
+# environment
+VSCODE_CWD = /home/marc
+# environment
+SSH_CONNECTION = 192.168.0.103 64223 192.168.0.119 22
+# environment
+PATH = /home/marc/.vscode-server/bin/2ccd690cbff1569e4a83d7c43d45101f817401dc/bin/remote-cli:/home/marc/rv1106/toolchain/env/arm-rockchip830-linux-uclibcgnueabihf/bin:/opt/hisi-linux/x86-arm/arm-himix200-linux/bin:/opt/cmake/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+ 
+VSCODE_IPC_HOOK_CLI = /run/user/1000/vscode-ipc-e9c1ced6-3349-4d52-b363-24166966792c.sock
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
+# makefile (from 'Makefile', line 2)
+ECHO := echo
+# automatic
+%F = $(notdir $%)
+# environment
+PWD = /home/marc/my_project/rknn_yolo_rtsp
+# makefile (from 'Makefile', line 39)
+SAMPLE_COMMON := sample_common_isp.c
+# default
+.LOADED := 
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+HOME = /home/marc
+# environment
+LOGNAME = marc
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# automatic
++F = $(notdir $+)
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+LC_TIME = en_HK.UTF-8
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 1
+# environment
+XDG_SESSION_ID = 58
+# environment
+USER = marc
+# environment
+LC_MONETARY = en_HK.UTF-8
+# makefile
+.DEFAULT_GOAL := all
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+LC_TELEPHONE = en_HK.UTF-8
+# default
+MAKE_COMMAND := make
+# default
+.VARIABLES := 
+# automatic
+*F = $(notdir $*)
+# environment
+LANGUAGE = zh_CN:en_US:en
+# makefile
+MAKEFLAGS = pqrR
+# environment
+MFLAGS = -pqrR
+# environment
+SSH_CLIENT = 192.168.0.103 64223 22
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+VSCODE_L10N_BUNDLE_LOCATION = 
+# environment
+LC_PAPER = en_HK.UTF-8
+# environment
+BROWSER = /home/marc/.vscode-server/bin/2ccd690cbff1569e4a83d7c43d45101f817401dc/bin/helpers/browser.sh
+# environment
+VSCODE_HANDLES_SIGPIPE = true
+# default
+MAKEFILES := 
+# environment
+LC_NUMERIC = en_HK.UTF-8
+# automatic
+<F = $(notdir $<)
+# makefile (from 'Makefile', line 10)
+SYSROOT = $(SDK_ROOT)/buildroot/output/rockchip_rv1126_rv1109/host/arm-buildroot-linux-gnueabihf/sysroot
+# environment
+LC_MEASUREMENT = en_HK.UTF-8
+# environment
+LC_ALL = C
+# makefile (from 'Makefile', line 1)
+hide := @
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# environment
+LC_IDENTIFICATION = en_HK.UTF-8
+# default
+.RECIPEPREFIX := 
+# environment
+LC_ADDRESS = en_HK.UTF-8
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+LANG = C
+# makefile (from 'Makefile', line 4)
+SDK_ROOT = /opt/atk-dlrv1126-toolchain
+# environment
+MOTD_SHOWN = pam
+# variable set hash-table stats:
+# Load=84/1024=8%, Rehash=0, Collisions=13/190=7%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# . (device 66306, inode 17834894): 25 files, no impossibilities.
+
+# 25 files, no impossibilities in 1 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+all:
+#  Command line target.
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := all
+# automatic
+# % := 
+# automatic
+# * := 
+# automatic
+# + := 
+# automatic
+# | := 
+# automatic
+# < := 
+# automatic
+# ^ := 
+# automatic
+# ? := 
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=17/69=25%
+#  recipe to execute (from 'Makefile', line 42):
+	$(GCC) main.cc comm.cc rknn_funcs.cpp postprocess.cc rknn_model.cc yolo.cc $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/rknn_yolo_rtsp --sysroot=$(SYSROOT)
+	# $(GCC) rknn_yolo.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/rknn_yolo --sysroot=$(SYSROOT)
+	# $(GCC) gpio_controll.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/gpio_controll --sysroot=$(SYSROOT)
+	# $(GCC) my_vi_rga_venc_rtsp_demo.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/my_vi_rga_venc_rtsp_demo --sysroot=$(SYSROOT)
+	# $(GCC) my_vi_venc_rtsp_demo.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/my_vi_venc_rtsp_demo --sysroot=$(SYSROOT)
+	# $(GCC) rkmedia_vi_rknn_venc_rtsp_test.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/rkmedia_vi_rknn_venc_rtsp_test --sysroot=$(SYSROOT)
+	# $(GCC) rkmedia_vi_venc_rtsp_test.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/rkmedia_vi_venc_rtsp_test --sysroot=$(SYSROOT)
+	# $(GCC) helloworld.c $(SAMPLE_COMMON) $(LIB_FILES) $(LD_FLAGS) $(CFLAGS) -o build/helloworld --sysroot=$(SYSROOT)
+	$(hide)$(ECHO) "Build Done ..."
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2023-07-30 15:47:25.935517956
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+clean:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 53):
+	rm ./build/*
+
+# files hash-table stats:
+# Load=5/1024=0%, Rehash=0, Collisions=0/17=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 1 (0) / strings = 31 / storage = 306 B / avg = 9 B
+# current buf: size = 8162 B / used = 306 B / count = 31 / avg = 9 B
+
+# strcache performance: lookups = 39 / hit rate = 20%
+# hash-table stats:
+# Load=31/8192=0%, Rehash=0, Collisions=1/39=3%
+# Finished Make data base on Sun Jul 30 16:05:52 2023
+
+ 

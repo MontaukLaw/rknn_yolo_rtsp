@@ -371,6 +371,9 @@ enum {FALSE_WIN = 0};
 // Define 'cimg_display' to: '0' to disable display capabilities.
 //                           '1' to use the X-Window framework (X11).
 //                           '2' to use the Microsoft GDI32 framework.
+
+#define  cimg_display 0
+
 #ifndef cimg_display
 #if cimg_OS==0
 #define cimg_display 0

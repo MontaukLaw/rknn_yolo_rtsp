@@ -293,7 +293,7 @@ int post_process_640_v5(rknn_output *rk_outputs, MODEL_INFO *m, detect_result_gr
 
     // no object detect
     if (validCount == 0) {
-        printf("found fucking nothing\n");
+        printf("found nothing\n");
         return -1;
     }
 

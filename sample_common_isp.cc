@@ -19,16 +19,16 @@ static rk_aiq_sys_ctx_t *g_aiq_ctx[MAX_AIQ_CTX];
 rk_aiq_working_mode_t g_WDRMode[MAX_AIQ_CTX];
 
 RK_S32 SAMPLE_COMM_ISP_Init(RK_S32 CamId, rk_aiq_working_mode_t WDRMode,
-                            RK_BOOL MultiCam, const char *iq_file_dir) 
+                            RK_BOOL MultiCam, const char *iq_file_dir)
 {
-  if (CamId >= MAX_AIQ_CTX) 
+  if (CamId >= MAX_AIQ_CTX)
   {
     printf("%s : CamId is over 3\n", __FUNCTION__);
     return -1;
   }
   // char *iq_file_dir = "iqfiles/";
   setlinebuf(stdout);
-  if (iq_file_dir == NULL) 
+  if (iq_file_dir == NULL)
   {
     printf("SAMPLE_COMM_ISP_Init : not start.\n");
     g_aiq_ctx[CamId] = NULL;
@@ -57,10 +57,9 @@ RK_S32 SAMPLE_COMM_ISP_Init(RK_S32 CamId, rk_aiq_working_mode_t WDRMode,
   return 0;
 }
 
-
-RK_S32 SAMPLE_COMM_ISP_Stop(RK_S32 CamId) 
+RK_S32 SAMPLE_COMM_ISP_Stop(RK_S32 CamId)
 {
-  if (CamId >= MAX_AIQ_CTX || !g_aiq_ctx[CamId]) 
+  if (CamId >= MAX_AIQ_CTX || !g_aiq_ctx[CamId])
   {
     printf("%s : CamId is over 3 or not init\n", __FUNCTION__);
     return -1;
@@ -74,22 +73,21 @@ RK_S32 SAMPLE_COMM_ISP_Stop(RK_S32 CamId)
   return 0;
 }
 
-
-RK_S32 SAMPLE_COMM_ISP_Run(RK_S32 CamId) 
+RK_S32 SAMPLE_COMM_ISP_Run(RK_S32 CamId)
 {
-  if (CamId >= MAX_AIQ_CTX || !g_aiq_ctx[CamId]) 
+  if (CamId >= MAX_AIQ_CTX || !g_aiq_ctx[CamId])
   {
     printf("%s : CamId is over 3 or not init\n", __FUNCTION__);
     return -1;
   }
-  if (rk_aiq_uapi_sysctl_prepare(g_aiq_ctx[CamId], 0, 0, g_WDRMode[CamId])) 
+  if (rk_aiq_uapi_sysctl_prepare(g_aiq_ctx[CamId], 0, 0, g_WDRMode[CamId]))
   {
     printf("rkaiq engine prepare failed !\n");
     g_aiq_ctx[CamId] = NULL;
     return -1;
   }
   printf("rk_aiq_uapi_sysctl_init/prepare succeed\n");
-  if (rk_aiq_uapi_sysctl_start(g_aiq_ctx[CamId])) 
+  if (rk_aiq_uapi_sysctl_start(g_aiq_ctx[CamId]))
   {
     printf("rk_aiq_uapi_sysctl_start  failed\n");
     return -1;
@@ -98,10 +96,9 @@ RK_S32 SAMPLE_COMM_ISP_Run(RK_S32 CamId)
   return 0;
 }
 
-
-RK_S32 SAMPLE_COMM_ISP_SetFrameRate(RK_S32 CamId, RK_U32 uFps) 
+RK_S32 SAMPLE_COMM_ISP_SetFrameRate(RK_S32 CamId, RK_U32 uFps)
 {
-  if (CamId >= MAX_AIQ_CTX || !g_aiq_ctx[CamId]) 
+  if (CamId >= MAX_AIQ_CTX || !g_aiq_ctx[CamId])
   {
     printf("%s : CamId is over 3 or not init\n", __FUNCTION__);
     return -1;
@@ -117,6 +114,5 @@ RK_S32 SAMPLE_COMM_ISP_SetFrameRate(RK_S32 CamId, RK_U32 uFps)
   printf("SAMPLE_COMM_ISP_SetFrameRate %d\n", uFps);
   return ret;
 }
-
 
 #endif

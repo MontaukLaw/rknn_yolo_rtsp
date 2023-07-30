@@ -16,7 +16,7 @@ static rtsp_demo_handle g_rtsplive = NULL;
 // its just a simple chain list
 static rknn_list *rknn_list_;
 // iqfile
-static RK_CHAR *pIqfilesPath = (RK_CHAR *) "/oem/etc/iqfiles/";
+static RK_CHAR *pIqfilesPath = (RK_CHAR *)"/oem/etc/iqfiles/";
 static RK_S32 s32CamId = 0;
 static RK_BOOL bMultictx = RK_FALSE;
 static rk_aiq_working_mode_t hdr_mode = RK_AIQ_WORKING_MODE_NORMAL;
@@ -31,10 +31,14 @@ static char *yoloModelFilePath = NULL;
 static int yoloModelSize = 0;
 RK_BOOL ifDetecting = RK_FALSE;
 
+// rknn推理结果的刷新
+static RK_U32 rknnDetectRefreshCounter = 0;
+
 rtsp_session_handle g_rtsp_session;
 
 // 直接在nv12的内存上画框
-static int nv12_border(char *pic, int pic_w, int pic_h, int rect_x, int rect_y, int rect_w, int rect_h, int R, int G, int B) {
+static int nv12_border(char *pic, int pic_w, int pic_h, int rect_x, int rect_y, int rect_w, int rect_h, int R, int G, int B)
+{
     /* Set up the rectangle border size */
     const int border = 5;
 
@@ -45,14 +49,17 @@ static int nv12_border(char *pic, int pic_w, int pic_h, int rect_x, int rect_y, 
     V = 0.5 * R - 0.4187 * G - 0.0813 * B + 128;
     /* Locking the scope of rectangle border range */
     int j, k;
-    for (j = rect_y; j < rect_y + rect_h; j++) {
-        for (k = rect_x; k < rect_x + rect_w; k++) {
+    for (j = rect_y; j < rect_y + rect_h; j++)
+    {
+        for (k = rect_x; k < rect_x + rect_w; k++)
+        {
             if (k < (rect_x + border) || k > (rect_x + rect_w - border) ||
-                j < (rect_y + border) || j > (rect_y + rect_h - border)) {
+                j < (rect_y + border) || j > (rect_y + rect_h - border))
+            {
                 /* Components of YUV's storage address index */
                 int y_index = j * pic_w + k;
                 int u_index =
-                        (y_index / 2 - pic_w / 2 * ((j + 1) / 2)) * 2 + pic_w * pic_h;
+                    (y_index / 2 - pic_w / 2 * ((j + 1) / 2)) * 2 + pic_w * pic_h;
                 int v_index = u_index + 1;
                 /* set up YUV's conponents value of rectangle border */
                 pic[y_index] = Y;
@@ -66,15 +73,18 @@ static int nv12_border(char *pic, int pic_w, int pic_h, int rect_x, int rect_y, 
 }
 
 // 初始化isp
-static void init_isp(void) {
+static void init_isp(void)
+{
     SAMPLE_COMM_ISP_Init(s32CamId, hdr_mode, bMultictx, pIqfilesPath);
     SAMPLE_COMM_ISP_Run(s32CamId);
     SAMPLE_COMM_ISP_SetFrameRate(s32CamId, FPS);
 }
 
 // 打印配置
-static void dump_cfg() {
-    for (int i = 0; i < cfg.session_count; i++) {
+static void dump_cfg()
+{
+    for (int i = 0; i < cfg.session_count; i++)
+    {
         printf("rtsp path = %s.\n", cfg.session_cfg[i].path);
         printf("video_type = %d.\n", cfg.session_cfg[i].video_type);
         printf("width = %d.\n", cfg.session_cfg[i].u32Width);
@@ -84,21 +94,25 @@ static void dump_cfg() {
     }
 }
 
-static void sig_proc(int signo) {
+static void sig_proc(int signo)
+{
     fprintf(stderr, "signal %d\n", signo);
     g_flag_run = 0;
 }
 
-//get data buffer for both session
-static void main_vi_process(void) {
+// get data buffer for both session
+static void main_vi_process(void)
+{
     MEDIA_BUFFER buffer;
 
-    while (g_flag_run) {
+    while (g_flag_run)
+    {
 
         // only get venc chn 0
         buffer = RK_MPI_SYS_GetMediaBuffer(RK_ID_VENC, DRAW_RESULT_BOX_CHN_INDEX, -1);
-        if (buffer) {
-            rtsp_tx_video(cfg.session_cfg[0].session, (const uint8_t *) RK_MPI_MB_GetPtr(buffer),
+        if (buffer)
+        {
+            rtsp_tx_video(cfg.session_cfg[0].session, (const uint8_t *)RK_MPI_MB_GetPtr(buffer),
                           RK_MPI_MB_GetSize(buffer), RK_MPI_MB_GetTimestamp(buffer));
 
             rtsp_do_event(cfg.session_cfg[0].session);
@@ -133,13 +147,18 @@ static void main_vi_process_old(void) {
 }
 #endif
 
-static void init_sessions(void) {
+static void init_sessions(void)
+{
     int ret = 0;
     // there are 2 session, one for DRAW box one for RTSP
-    for (int i = 0; i < cfg.session_count; i++) {
-        if (i == 0) {
+    for (int i = 0; i < cfg.session_count; i++)
+    {
+        if (i == 0)
+        {
             cfg.session_cfg[i].session = rtsp_new_session(g_rtsplive, "/live/main_stream");
-        } else {
+        }
+        else
+        {
             cfg.session_cfg[i].session = rtsp_new_session(g_rtsplive, "/live/sub_stream");
         }
 
@@ -155,9 +174,12 @@ static void init_sessions(void) {
         printf("VENC create\n");
         cfg.session_cfg[i].stVenChn.enModId = RK_ID_VENC;
         cfg.session_cfg[i].stVenChn.s32ChnId = i;
-        if (i == DRAW_RESULT_BOX_CHN_INDEX) {
+        if (i == DRAW_RESULT_BOX_CHN_INDEX)
+        {
             common_venc_setup(&cfg.session_cfg[i], true);
-        } else {
+        }
+        else
+        {
             common_venc_setup(&cfg.session_cfg[i], false);
         }
         cfg.session_cfg[i].stRgaChn.enModId = RK_ID_RGA;
@@ -166,14 +188,18 @@ static void init_sessions(void) {
         // stream camera 0 to rknn
 
         // bind RKNN chn to rga RK_NN_RGA_CHN_INDEX == 1
-        if (i == RK_NN_RGA_CHN_INDEX) {
+        if (i == RK_NN_RGA_CHN_INDEX)
+        {
             ret = bind_rga_for_vi(cfg.session_cfg[i]);
-            if (ret < 0) {
+            if (ret < 0)
+            {
                 printf("bind rga for vi failed\n");
                 break;
             }
             RK_MPI_VI_StartStream(s32CamId, cfg.session_cfg[i].stViChn.s32ChnId);
-        } else {
+        }
+        else
+        {
             printf("venc chn:%d \r\n", cfg.session_cfg[i].stVenChn.s32ChnId);
 
             // bind vi to venc
@@ -184,7 +210,7 @@ static void init_sessions(void) {
         // RK_MPI_VI_StartStream(s32CamId, cfg.session_cfg[i].stViChn.s32ChnId);
         // }
         // else {
-        //RK_MPI_VI_StartStream(s32CamId, cfg.session_cfg[i].stViChn.s32ChnId);
+        // RK_MPI_VI_StartStream(s32CamId, cfg.session_cfg[i].stViChn.s32ChnId);
         // this session go to rtsp directly
         // RK_MPI_SYS_Bind(&cfg.session_cfg[i].stViChn, &cfg.session_cfg[i].stVenChn);
         //}
@@ -197,17 +223,21 @@ static void init_sessions(void) {
     }
 }
 
-static void destroy_all(void) {
+static void destroy_all(void)
+{
 
-    if (observer_thread_id) {
+    if (observer_thread_id)
+    {
         pthread_join(observer_thread_id, NULL);
     }
 
-    if (get_rga_buffer_thread_id) {
+    if (get_rga_buffer_thread_id)
+    {
         pthread_join(get_rga_buffer_thread_id, NULL);
     }
 
-    if (rknn_yolo_thread_id) {
+    if (rknn_yolo_thread_id)
+    {
         pthread_join(rknn_yolo_thread_id, NULL);
     }
 
@@ -225,10 +255,10 @@ static void destroy_all(void) {
     SAMPLE_COMM_ISP_Stop(s32CamId);
 
     destory_rknn_list(&rknn_list_);
-
 }
 
-void print_mb_info(MEDIA_BUFFER buffer) {
+void print_mb_info(MEDIA_BUFFER buffer)
+{
     int cnt = 0;
     printf("#%d Get Frame:ptr:%p, size:%zu, mode:%d, channel:%d, timestamp:%lld\n",
            cnt++, RK_MPI_MB_GetPtr(buffer), RK_MPI_MB_GetSize(buffer),
@@ -236,9 +266,11 @@ void print_mb_info(MEDIA_BUFFER buffer) {
            RK_MPI_MB_GetTimestamp(buffer));
 }
 
-static void draw_box(MEDIA_BUFFER *buffer) {
+static void draw_box(MEDIA_BUFFER *buffer)
+{
     // draw box
-    if (rknn_list_size(rknn_list_)) {
+    if (rknn_list_size(rknn_list_))
+    {
         long time_before;
         detect_result_group_t detect_result_group;
         memset(&detect_result_group, 0, sizeof(detect_result_group));
@@ -248,17 +280,20 @@ static void draw_box(MEDIA_BUFFER *buffer) {
         // printf("time interval is %ld\n", getCurrentTimeMsec() - time_before);
 
         // iterate the detected object
-        for (int j = 0; j < detect_result_group.detect_count; j++) {
+        for (int j = 0; j < detect_result_group.detect_count; j++)
+        {
             int x = detect_result_group.results[j].box.left + X_START;
             int y = detect_result_group.results[j].box.top + Y_START;
             int w = (detect_result_group.results[j].box.right -
                      detect_result_group.results[j].box.left);
             int h = (detect_result_group.results[j].box.bottom -
                      detect_result_group.results[j].box.top);
-            while ((uint32_t) (x + w) >= cfg.session_cfg[DRAW_RESULT_BOX_CHN_INDEX].u32Width) {
+            while ((uint32_t)(x + w) >= cfg.session_cfg[DRAW_RESULT_BOX_CHN_INDEX].u32Width)
+            {
                 w -= 16;
             }
-            while ((uint32_t) (y + h) >= cfg.session_cfg[DRAW_RESULT_BOX_CHN_INDEX].u32Height) {
+            while ((uint32_t)(y + h) >= cfg.session_cfg[DRAW_RESULT_BOX_CHN_INDEX].u32Height)
+            {
                 h -= 16;
             }
             printf("border=(%d %d %d %d)\n", x, y, w, h);
@@ -270,38 +305,106 @@ static void draw_box(MEDIA_BUFFER *buffer) {
             int rotatedX = picWidth - x - w;
             int rotatedY = picHeight - y - h;
             printf("rotatedX: %d, rotatedY: %d\n", rotatedX, rotatedY);
-            nv12_border((char *) RK_MPI_MB_GetPtr(buffer), picWidth, picHeight, rotatedX,
+            nv12_border((char *)RK_MPI_MB_GetPtr(buffer), picWidth, picHeight, rotatedX,
                         rotatedY, w, h, 0, 0, 255);
         }
     }
 }
 
-typedef struct g_box_info_t {
+typedef struct g_box_info_t
+{
     int x;
     int y;
     int w;
     int h;
 } box_info_t;
 
-box_info_t boxInfoList[10];
+box_info_t boxInfoList[OBJ_NUMB_MAX_SIZE];
 int boxInfoListNumber = 0;
 int boxDisplayCounterDown = 0;
 
-static void *observer_thread(void *args) {
+void draw_rknn_box(MEDIA_BUFFER buffer, detect_result_group_t detectResultGroup)
+{
+    for (int j = 0; j < detectResultGroup.detect_count; j++)
+    {
+        int x = detectResultGroup.results[j].box.left + X_START;
+        int y = detectResultGroup.results[j].box.top + Y_START;
+        int w = (detectResultGroup.results[j].box.right - detectResultGroup.results[j].box.left);
+        int h = (detectResultGroup.results[j].box.bottom - detectResultGroup.results[j].box.top);
+
+        while ((uint32_t)(x + w) >= RTSP_INPUT_VI_WIDTH)
+        {
+            w -= 16;
+        }
+        while ((uint32_t)(y + h) >= RTSP_INPUT_VI_HEIGHT)
+        {
+            h -= 16;
+        }
+
+        printf("border=(%d %d %d %d)\n", x, y, w, h);
+
+        nv12_border((char *)RK_MPI_MB_GetPtr(buffer), RTSP_INPUT_VI_WIDTH, RTSP_INPUT_VI_HEIGHT,
+                    boxInfoList[j].x, boxInfoList[j].y, boxInfoList[j].w, boxInfoList[j].h, 0, 0, 255);
+    }
+}
+
+static void *observer_thread(void *args)
+{
 
     memset(boxInfoList, 0, sizeof(boxInfoList));
 
     MEDIA_BUFFER buffer;
 
-    while (g_flag_run) {
+    RK_U32 lastRknnDetectRefreshCounter = 0;
+    detect_result_group_t detectResultGroup; // [MAX_RKNN_LIST_NUM];
+
+    while (g_flag_run)
+    {
 
         buffer = RK_MPI_SYS_GetMediaBuffer(RK_ID_VI, DRAW_RESULT_BOX_CHN_INDEX, -1);
 
-        if (!buffer) {
+        if (!buffer)
+        {
             usleep(1000);
             continue;
         }
-        if (rknn_list_size(rknn_list_)) {
+
+        // 当有新的推理结果的时候
+        if (lastRknnDetectRefreshCounter != rknnDetectRefreshCounter)
+        {
+            long time_before;
+            memset(&detectResultGroup, 0, sizeof(detectResultGroup));
+            rknn_list_pop(rknn_list_, &time_before, &detectResultGroup);
+        }
+
+        for (int j = 0; j < detectResultGroup.detect_count; j++)
+        {
+            int x = detectResultGroup.results[j].box.left + X_START;
+            int y = detectResultGroup.results[j].box.top + Y_START;
+            int w = (detectResultGroup.results[j].box.right - detectResultGroup.results[j].box.left);
+            int h = (detectResultGroup.results[j].box.bottom - detectResultGroup.results[j].box.top);
+
+            while ((uint32_t)(x + w) >= RTSP_INPUT_VI_WIDTH)
+            {
+                w -= 16;
+            }
+            while ((uint32_t)(y + h) >= RTSP_INPUT_VI_HEIGHT)
+            {
+                h -= 16;
+            }
+
+            printf("border=(%d %d %d %d)\n", x, y, w, h);
+
+            nv12_border((char *)RK_MPI_MB_GetPtr(buffer), RTSP_INPUT_VI_WIDTH, RTSP_INPUT_VI_HEIGHT, x, y, w, h, 0, 0, 255);
+                       
+        }
+
+        // draw_rknn_box(buffer, detectResultGroup);
+        // count_box_info((char *)data, rknnObjNumber, detectResultGroup);
+
+#if 0
+        if (rknn_list_size(rknn_list_))
+        {
 
             long time_before;
             detect_result_group_t detect_result_group;
@@ -311,18 +414,19 @@ static void *observer_thread(void *args) {
             rknn_list_pop(rknn_list_, &time_before, &detect_result_group);
             // printf("result count:%d \n", detect_result_group.count);
 
-            for (int j = 0; j < detect_result_group.detect_count; j++) {
+            for (int j = 0; j < detect_result_group.detect_count; j++)
+            {
                 int x = detect_result_group.results[j].box.left + X_START;
                 int y = detect_result_group.results[j].box.top + Y_START;
-                int w = (detect_result_group.results[j].box.right -
-                         detect_result_group.results[j].box.left);
-                int h = (detect_result_group.results[j].box.bottom -
-                         detect_result_group.results[j].box.top);
+                int w = (detect_result_group.results[j].box.right - detect_result_group.results[j].box.left);
+                int h = (detect_result_group.results[j].box.bottom - detect_result_group.results[j].box.top);
 
-                while ((uint32_t) (x + w) >= RTSP_INPUT_VI_WIDTH) {
+                while ((uint32_t)(x + w) >= RTSP_INPUT_VI_WIDTH)
+                {
                     w -= 16;
                 }
-                while ((uint32_t) (y + h) >= RTSP_INPUT_VI_HEIGHT) {
+                while ((uint32_t)(y + h) >= RTSP_INPUT_VI_HEIGHT)
+                {
                     h -= 16;
                 }
                 printf("border=(%d %d %d %d)\n", x, y, w, h);
@@ -334,21 +438,25 @@ static void *observer_thread(void *args) {
         }
 
         // hold box for 3 frames
-        if (boxInfoListNumber > 0) {
-            for (int i = 0; i < boxInfoListNumber; i++) {
-                nv12_border((char *) RK_MPI_MB_GetPtr(buffer), RTSP_INPUT_VI_WIDTH, RTSP_INPUT_VI_HEIGHT,
+        if (boxInfoListNumber > 0)
+        {
+            for (int i = 0; i < boxInfoListNumber; i++)
+            {
+                nv12_border((char *)RK_MPI_MB_GetPtr(buffer), RTSP_INPUT_VI_WIDTH, RTSP_INPUT_VI_HEIGHT,
                             boxInfoList[i].x, boxInfoList[i].y, boxInfoList[i].w, boxInfoList[i].h, 0, 0, 255);
             }
             boxDisplayCounterDown--;
         }
 
-        if (boxDisplayCounterDown == 0) {
+        if (boxDisplayCounterDown == 0)
+        {
             boxInfoListNumber = 0;
             memset(boxInfoList, 0, sizeof(boxInfoList));
         }
+#endif
 
-        nv12_border((char *) RK_MPI_MB_GetPtr(buffer), RTSP_INPUT_VI_WIDTH, RTSP_INPUT_VI_HEIGHT,
-                    X_START, Y_START, 640, 640, 0, 200, 0);
+        // nv12_border((char *)RK_MPI_MB_GetPtr(buffer), RTSP_INPUT_VI_WIDTH, RTSP_INPUT_VI_HEIGHT,
+        // X_START, Y_START, 640, 640, 0, 0, 200);
 
         RK_MPI_SYS_SendMediaBuffer(RK_ID_VENC, DRAW_RESULT_BOX_CHN_INDEX, buffer);
         RK_MPI_MB_ReleaseBuffer(buffer);
@@ -426,18 +534,21 @@ static void *observer_thread_old(void *args) {
 }
 #endif
 
-static int load_cfg(const char *cfg_file) {
+static int load_cfg(const char *cfg_file)
+{
     FILE *fp = fopen(cfg_file, "r");
     char line[1024];
     int count = 0;
 
-    if (!fp) {
+    if (!fp)
+    {
         fprintf(stderr, "open %s failed\n", cfg_file);
         return -1;
     }
 
     memset(&cfg, 0, sizeof(cfg));
-    while (fgets(line, sizeof(line) - 1, fp)) {
+    while (fgets(line, sizeof(line) - 1, fp))
+    {
         const char *p;
         // char codec_type[20];
         memset(&cfg.session_cfg[count], 0, sizeof(cfg.session_cfg[count]));
@@ -450,20 +561,25 @@ static int load_cfg(const char *cfg_file) {
         if (sscanf(p, "path=%s", cfg.session_cfg[count].path) != 1)
             continue;
 
-        if ((p = strstr(line, "video_type="))) {
+        if ((p = strstr(line, "video_type=")))
+        {
             if (sscanf(p,
                        "video_type=%d width=%u height=%u image_type=%u video_path=%s",
                        &cfg.session_cfg[count].video_type,
                        &cfg.session_cfg[count].u32Width,
                        &cfg.session_cfg[count].u32Height,
                        &cfg.session_cfg[count].enImageType,
-                       cfg.session_cfg[count].videopath) == 0) {
+                       cfg.session_cfg[count].videopath) == 0)
+            {
                 printf("parse video file failed %s.\n", p);
             }
         }
-        if (cfg.session_cfg[count].video_type != RK_CODEC_TYPE_NONE) {
+        if (cfg.session_cfg[count].video_type != RK_CODEC_TYPE_NONE)
+        {
             count++;
-        } else {
+        }
+        else
+        {
             printf("parse line %s failed\n", line);
         }
     }
@@ -473,7 +589,8 @@ static int load_cfg(const char *cfg_file) {
     return count;
 }
 
-static int nv12_to_rgb24_640x640(void *yuvBuffer, void *rgbBuffer) {
+static int nv12_to_rgb24_640x640(void *yuvBuffer, void *rgbBuffer)
+{
 
     rga_buffer_t src, dst;
     memset(&src, 0, sizeof(rga_buffer_t));
@@ -487,7 +604,8 @@ static int nv12_to_rgb24_640x640(void *yuvBuffer, void *rgbBuffer) {
 
     IM_STATUS status = imcvtcolor(src, dst, src.format, dst.format);
 
-    if (status != IM_STATUS_SUCCESS) {
+    if (status != IM_STATUS_SUCCESS)
+    {
         printf("ERROR: imcvtcolor failed!\n");
         return -1;
     }
@@ -495,7 +613,8 @@ static int nv12_to_rgb24_640x640(void *yuvBuffer, void *rgbBuffer) {
     return 0;
 }
 
-static void write_rgb_file(void *data) {
+static void write_rgb_file(void *data)
+{
     char saveFilePath[128];
     memset(saveFilePath, 0, sizeof(saveFilePath));
 
@@ -504,7 +623,8 @@ static void write_rgb_file(void *data) {
     sprintf(saveFilePath, "/tmp/rga_%d.rgb", counter);
 
     FILE *save_file = fopen(saveFilePath, "w");
-    if (!save_file) {
+    if (!save_file)
+    {
         printf("ERROR: Open %s failed!\n", saveFilePath);
     }
 
@@ -513,7 +633,8 @@ static void write_rgb_file(void *data) {
 }
 
 // this thread is for rknn
-static void *rknn_yolo_thread(void *args) {
+static void *rknn_yolo_thread(void *args)
+{
 
     int ret = 0;
 
@@ -522,10 +643,12 @@ static void *rknn_yolo_thread(void *args) {
     MEDIA_BUFFER buffer = NULL;
 
     // get data from vi
-    while (g_flag_run) {
+    while (g_flag_run)
+    {
         ifDetecting = RK_TRUE;
         buffer = RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA, RK_NN_RGA_CHN_INDEX, -1);
-        if (!buffer) {
+        if (!buffer)
+        {
             usleep(1000);
             continue;
         }
@@ -538,47 +661,56 @@ static void *rknn_yolo_thread(void *args) {
         // trans_data_for_yolo_input(rga_buffer_model_input, cfg, buffer);
         void *pRknnInputData = malloc(YOLO_INPUT_SIZE);
         ret = nv12_to_rgb24_640x640(RK_MPI_MB_GetPtr(buffer), pRknnInputData);
-        if (ret < 0) {
+        if (ret < 0)
+        {
             printf("nv12_to_rgb24_640x640 failed\n");
         }
 
-        if (ret == 0) {
+        if (ret == 0)
+        {
             detect_result_group_t detect_result_group;
             memset(&detect_result_group, 0, sizeof(detect_result_group_t));
 
-            write_rgb_file(pRknnInputData);
+            // write_rgb_file(pRknnInputData);
 
             // Post Process
             // detect_by_buf(pRknnInputData, &detect_result_group);
             int pResult = predict(pRknnInputData, &detect_result_group);
 
             // put detect result to list
-            if (detect_result_group.detect_count > 0) {
+            if (detect_result_group.detect_count > 0)
+            {
                 rknn_list_push(rknn_list_, get_current_time_ms(), detect_result_group);
                 int size = rknn_list_size(rknn_list_);
-                if (size >= MAX_RKNN_LIST_NUM) {
+                if (size >= MAX_RKNN_LIST_NUM)
+                {
                     rknn_list_drop(rknn_list_);
                 }
                 printf("size is %d\n", size);
             }
         }
 
+        rknnDetectRefreshCounter++;
+
         RK_MPI_MB_ReleaseBuffer(buffer);
         free(pRknnInputData);
-
     }
 
     return NULL;
 }
 
-static void *get_rga_buffer_thread(void *arg) {
+static void *get_rga_buffer_thread(void *arg)
+{
     MEDIA_BUFFER buffer = NULL;
 
-    while (g_flag_run) {
+    while (g_flag_run)
+    {
 
-        if (RK_TRUE == ifDetecting) {
+        if (RK_TRUE == ifDetecting)
+        {
             buffer = RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA, RK_NN_RGA_CHN_INDEX, -1);
-            if (!buffer) {
+            if (!buffer)
+            {
                 usleep(1000);
                 continue;
             }
@@ -589,7 +721,8 @@ static void *get_rga_buffer_thread(void *arg) {
     return NULL;
 }
 
-void venc_packet_cb(MEDIA_BUFFER mb) {
+void venc_packet_cb(MEDIA_BUFFER mb)
+{
 
     static RK_S32 packet_cnt = 0;
     if (g_flag_run == 0)
@@ -597,8 +730,9 @@ void venc_packet_cb(MEDIA_BUFFER mb) {
 
     printf("#Get packet-%d, size %zu\n", packet_cnt, RK_MPI_MB_GetSize(mb));
 
-    if (g_rtsplive && g_rtsp_session) {
-        rtsp_tx_video(g_rtsp_session, (const uint8_t *) RK_MPI_MB_GetPtr(mb), RK_MPI_MB_GetSize(mb),
+    if (g_rtsplive && g_rtsp_session)
+    {
+        rtsp_tx_video(g_rtsp_session, (const uint8_t *)RK_MPI_MB_GetPtr(mb), RK_MPI_MB_GetSize(mb),
                       RK_MPI_MB_GetTimestamp(mb));
         rtsp_do_event(g_rtsplive);
     }
@@ -608,7 +742,8 @@ void venc_packet_cb(MEDIA_BUFFER mb) {
 }
 
 // H264 codec
-int create_venc_chn(RK_U32 fps, RK_U32 u32Width, RK_U32 u32Height, RK_U32 vencChn) {
+int create_venc_chn(RK_U32 fps, RK_U32 u32Width, RK_U32 u32Height, RK_U32 vencChn)
+{
 
     VENC_CHN_ATTR_S venc_chn_attr;
     memset(&venc_chn_attr, 0, sizeof(venc_chn_attr));
@@ -630,10 +765,11 @@ int create_venc_chn(RK_U32 fps, RK_U32 u32Width, RK_U32 u32Height, RK_U32 vencCh
     venc_chn_attr.stVencAttr.u32PicHeight = u32Height;
     venc_chn_attr.stVencAttr.u32VirWidth = u32Width;
     venc_chn_attr.stVencAttr.u32VirHeight = u32Height;
-    venc_chn_attr.stVencAttr.u32Profile = 77;  // main profile
+    venc_chn_attr.stVencAttr.u32Profile = 77; // main profile
 
     ret = RK_MPI_VENC_CreateChn(vencChn, &venc_chn_attr);
-    if (ret) {
+    if (ret)
+    {
         printf("ERROR: create VENC[%d] error! ret=%d\n", vencChn, ret);
         return -1;
     }
@@ -664,7 +800,8 @@ int create_vi(RK_U32 u32Width, RK_U32 u32Height) {
 }
 #endif
 
-int create_vi(RK_U32 u32Width, RK_U32 u32Height, const RK_CHAR *pVideoNode, RK_S32 viChn) {
+int create_vi(RK_U32 u32Width, RK_U32 u32Height, const RK_CHAR *pVideoNode, RK_S32 viChn)
+{
     RK_S32 ret = 0;
 
     printf("init mpi\n");
@@ -679,7 +816,8 @@ int create_vi(RK_U32 u32Width, RK_U32 u32Height, const RK_CHAR *pVideoNode, RK_S
     vi_chn_attr.enWorkMode = VI_WORK_MODE_NORMAL;
     ret = RK_MPI_VI_SetChnAttr(0, viChn, &vi_chn_attr);
     ret |= RK_MPI_VI_EnableChn(s32CamId, viChn);
-    if (ret) {
+    if (ret)
+    {
         printf("ERROR: create VI[%d] error! ret=%d\n", viChn, ret);
         return -1;
     }
@@ -690,7 +828,8 @@ int create_vi(RK_U32 u32Width, RK_U32 u32Height, const RK_CHAR *pVideoNode, RK_S
 // 1. 是直接绑定， 然后使用回调
 // 2. 是start stream，然后getbuffer
 // 下面是第一种方式
-int bind_vi_venc() {
+int bind_vi_venc()
+{
 
     // 直接把VI的数据流绑定到VENC上， 通道号都是1
     MPP_CHN_S stSrcChn;
@@ -703,7 +842,8 @@ int bind_vi_venc() {
     stDestChn.s32ChnId = DRAW_RESULT_BOX_CHN_INDEX;
 
     RK_S32 ret = RK_MPI_SYS_Bind(&stSrcChn, &stDestChn);
-    if (ret) {
+    if (ret)
+    {
         printf("ERROR: Bind VI[0] and VENC[0] error! ret=%d\n", ret);
         return -1;
     }
@@ -712,34 +852,37 @@ int bind_vi_venc() {
 
 // 注册编码的回调，当编码产生数据之后就会回调这个函数
 // 与RK_MPI_SYS_GetMediaBuffer相比，无需缓存buffer等待用户索取，因此更节省内存。
-int reg_venc_cb() {
+int reg_venc_cb()
+{
 
     MPP_CHN_S stVenChn;
     memset(&stVenChn, 0, sizeof(MPP_CHN_S));
     stVenChn.enModId = RK_ID_VENC;
-    stVenChn.s32ChnId = DRAW_RESULT_BOX_CHN_INDEX;  // 使用monitor进程画框子的那个通道
+    stVenChn.s32ChnId = DRAW_RESULT_BOX_CHN_INDEX; // 使用monitor进程画框子的那个通道
 
     RK_S32 ret = RK_MPI_SYS_RegisterOutCb(&stVenChn, venc_packet_cb);
-    if (ret) {
+    if (ret)
+    {
         printf("ERROR: register output callback for VENC[0] error! ret=%d\n", ret);
         return -1;
     }
 
     return 0;
-
 }
 
 // 利用rtsp库， 将h264数据封装成rtsp流
-void init_rtsp(void) {
+void init_rtsp(void)
+{
     printf("init rtsp\n");
-    g_rtsplive = create_rtsp_demo(554);   // 554即rtsp端口号， 返回的是一个rtsp_demo_handle指针
-    g_rtsp_session = rtsp_new_session(g_rtsplive, "/live/main_stream");     // 创建rtsp会话， 访问地址是rtsp://ip/live/main_stream
-    rtsp_set_video(g_rtsp_session, RTSP_CODEC_ID_VIDEO_H264, NULL, 0);      // 设置视频编码格式
-    rtsp_sync_video_ts(g_rtsp_session, rtsp_get_reltime(), rtsp_get_ntptime());    // 设置时间戳
+    g_rtsplive = create_rtsp_demo(554);                                         // 554即rtsp端口号， 返回的是一个rtsp_demo_handle指针
+    g_rtsp_session = rtsp_new_session(g_rtsplive, "/live/main_stream");         // 创建rtsp会话， 访问地址是rtsp://ip/live/main_stream
+    rtsp_set_video(g_rtsp_session, RTSP_CODEC_ID_VIDEO_H264, NULL, 0);          // 设置视频编码格式
+    rtsp_sync_video_ts(g_rtsp_session, rtsp_get_reltime(), rtsp_get_ntptime()); // 设置时间戳
 }
 
 // 创建rga通道
-int create_rga_chn(RK_S32 rgaChn, RK_U32 u32WidthIn, RK_U32 u32HeightIn, RK_U32 u32WidthOut, RK_U32 u32HeightOut) {
+int create_rga_chn(RK_S32 rgaChn, RK_U32 u32WidthIn, RK_U32 u32HeightIn, RK_U32 u32WidthOut, RK_U32 u32HeightOut)
+{
 
     RGA_ATTR_S stRgaAttr;
     memset(&stRgaAttr, 0, sizeof(stRgaAttr));
@@ -747,24 +890,25 @@ int create_rga_chn(RK_S32 rgaChn, RK_U32 u32WidthIn, RK_U32 u32HeightIn, RK_U32 
     stRgaAttr.u16BufPoolCnt = 3;
     stRgaAttr.stImgIn.imgType = IMAGE_TYPE_NV12;
     stRgaAttr.u16Rotaion = 0;
-    stRgaAttr.stImgIn.u32X = (u32WidthIn - u32WidthOut) / 2;   // 输入的起始位置， 例如输入如果是1920x1080， 输出是640x640， 那么输入的起始位置就是(1920-640)/2=640
+    stRgaAttr.stImgIn.u32X = (u32WidthIn - u32WidthOut) / 2; // 输入的起始位置， 例如输入如果是1920x1080， 输出是640x640， 那么输入的起始位置就是(1920-640)/2=640
     stRgaAttr.stImgIn.u32Y = (u32HeightIn - u32HeightOut) / 2;
 
-    stRgaAttr.stImgIn.u32Width = u32WidthOut;   // 注意这里是输出的宽高
+    stRgaAttr.stImgIn.u32Width = u32WidthOut; // 注意这里是输出的宽高
     stRgaAttr.stImgIn.u32Height = u32HeightOut;
-    stRgaAttr.stImgIn.u32HorStride = u32WidthIn;   // 所谓虚高
+    stRgaAttr.stImgIn.u32HorStride = u32WidthIn; // 所谓虚高
     stRgaAttr.stImgIn.u32VirStride = u32HeightIn;
 
-    stRgaAttr.stImgOut.u32X = 0;   // 输出的起始位置
+    stRgaAttr.stImgOut.u32X = 0; // 输出的起始位置
     stRgaAttr.stImgOut.u32Y = 0;
-    stRgaAttr.stImgOut.imgType = IMAGE_TYPE_NV12;    // 输出的格式
-    stRgaAttr.stImgOut.u32Width = u32WidthOut;       // 输出的宽高
+    stRgaAttr.stImgOut.imgType = IMAGE_TYPE_NV12; // 输出的格式
+    stRgaAttr.stImgOut.u32Width = u32WidthOut;    // 输出的宽高
     stRgaAttr.stImgOut.u32Height = u32HeightOut;
-    stRgaAttr.stImgOut.u32HorStride = u32WidthOut;   // 输出的虚高;
+    stRgaAttr.stImgOut.u32HorStride = u32WidthOut; // 输出的虚高;
     stRgaAttr.stImgOut.u32VirStride = u32HeightOut;
-    RK_S32 ret = RK_MPI_RGA_CreateChn(rgaChn, &stRgaAttr);   // 创建rga通道
+    RK_S32 ret = RK_MPI_RGA_CreateChn(rgaChn, &stRgaAttr); // 创建rga通道
 
-    if (ret) {
+    if (ret)
+    {
         printf("ERROR: RGA Set Attr: ImgIn:<%u,%u,%u,%u> "
                "ImgOut:<%u,%u,%u,%u>, rotation=%u failed! ret=%d\n",
                stRgaAttr.stImgIn.u32X, stRgaAttr.stImgIn.u32Y,
@@ -778,7 +922,8 @@ int create_rga_chn(RK_S32 rgaChn, RK_U32 u32WidthIn, RK_U32 u32HeightIn, RK_U32 
 }
 
 // 将vi绑定到vga
-int bind_vi_rga(RK_S32 cameraId, RK_U32 viChnId, RK_U32 rgaChnId) {
+int bind_vi_rga(RK_S32 cameraId, RK_U32 viChnId, RK_U32 rgaChnId)
+{
 
     RK_S32 ret = 0;
 
@@ -792,19 +937,20 @@ int bind_vi_rga(RK_S32 cameraId, RK_U32 viChnId, RK_U32 rgaChnId) {
     stDestChn.s32ChnId = rgaChnId;
 
     ret = RK_MPI_SYS_Bind(&stSrcChn, &stDestChn);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         printf("ERROR: Bind vi[%d] and rga[%d] failed! ret=%d\n", viChnId, rgaChnId, ret);
         return -1;
     }
 
     return 0;
-
 }
 
 // rtsp pipe: scale0 -> vi chn 0 -> RK_MPI_SYS_GetMediaBuffer(RK_ID_VI）from vi chn0 -> 获取rknn的推测结果队列 -> 画框子 -> RK_MPI_SYS_SendMediaBuffer(RK_ID_VENC) to venc chn 0
 // venc 的回调 -> rtsp
 // rknn pipe: scale1 -> vi chn 1 1920x1080 -> rga chn 1 640x640 -> RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA）转成RGB，推理之后，放入队列
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
     RK_U32 u32Width = 1920;
     RK_U32 u32Height = 1080;
@@ -813,14 +959,15 @@ int main(int argc, char **argv) {
     // RK_U32 u32VC1Width = 1920;
     // RK_U32 u32VC1Height = 1080;
 
-    // imx415 可以使用 1280*720
+    // imx415 只能使用 1280*720
     RK_U32 u32VC1Width = 1280;
     RK_U32 u32VC1Height = 720;
 
     signal(SIGINT, sig_proc);
 
     int ret = 0;
-    if (argc < 2) {
+    if (argc < 2)
+    {
         printf("please input model name and rtsp config file\n");
         return -1;
     }
@@ -828,7 +975,8 @@ int main(int argc, char **argv) {
     // yoloModelFilePath = argv[1];
     // 初始化模型
     ret = init_model(argc, argv);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("init model failed\n");
         return -1;
     }
@@ -847,13 +995,15 @@ int main(int argc, char **argv) {
 
     // 分别为rknn跟monitor创建vi通道，通道号分别为0跟1
     ret = create_vi(u32Width, u32Height, "rkispp_scale0", DRAW_RESULT_BOX_CHN_INDEX);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("create_vi %d failed\n", DRAW_RESULT_BOX_CHN_INDEX);
         return -1;
     }
 
     ret = create_vi(u32VC1Width, u32VC1Height, "rkispp_scale1", RK_NN_RGA_CHN_INDEX);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("create_vi %d cb\n", RK_NN_RGA_CHN_INDEX);
         return -1;
     }
@@ -861,7 +1011,8 @@ int main(int argc, char **argv) {
     // 创建rga通道，通道号为1
     ret = create_rga_chn(RK_NN_RGA_CHN_INDEX, u32VC1Width,
                          u32VC1Height, MODEL_INPUT_SIZE, MODEL_INPUT_SIZE);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("create_rga_chn failed ret:%d\n", ret);
         return -1;
     }
@@ -871,14 +1022,16 @@ int main(int argc, char **argv) {
 
     // 创建venc通道，通道号为0
     ret = create_venc_chn(30, u32Width, u32Height, DRAW_RESULT_BOX_CHN_INDEX);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("create_venc_chn %d\n", DRAW_RESULT_BOX_CHN_INDEX);
         return -1;
     }
 
     // 注册venc的回调函数，即产生了编码好的数据，就会回调这个函数
     ret = reg_venc_cb();
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("reg venc cb\n");
         return -1;
     }
@@ -886,21 +1039,23 @@ int main(int argc, char **argv) {
     // bind_vi_venc();
     // 打开vi通道０的输出，即开始从isp获取数据
     ret = RK_MPI_VI_StartStream(s32CamId, DRAW_RESULT_BOX_CHN_INDEX);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         printf("RK_MPI_VI_StartStream failed\n");
         return -1;
     }
 
-    //　创建rknn的队列，用于线程间保存rknn的推理结果
+    // 　创建rknn的队列，用于线程间保存rknn的推理结果
     create_rknn_list(&rknn_list_);
 
-    //　创建推理线程
+    // 　创建推理线程
     pthread_create(&rknn_yolo_thread_id, NULL, rknn_yolo_thread, NULL);
 
     // 从vi中获取数据，然后那推理结果，画框子，然后送进编码器
     pthread_create(&observer_thread_id, NULL, observer_thread, NULL);
 
-    while (g_flag_run) {
+    while (g_flag_run)
+    {
         usleep(1000);
     }
 
